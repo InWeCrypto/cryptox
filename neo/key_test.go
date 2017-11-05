@@ -1,0 +1,23 @@
+package neo
+
+import (
+	"encoding/hex"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestNEOAddress(t *testing.T) {
+	key, err := KeyFromWIF("L4Ns4Uh4WegsHxgDG49hohAYxuhj41hhxG6owjjTWg95GSrRRbLL")
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t,
+		hex.EncodeToString(key.PrivateKey.ToBytes()),
+		"d59208b9228bff23009a666262a800f20f9dad38b0d9291f445215a0d4542beb")
+
+	assert.Equal(t, hex.EncodeToString(key.PrivateKey.PublicKey.ToBytes()), "0398b8d209365a197311d1b288424eaea556f6235f5730598dede5647f6a11d99a")
+	assert.Equal(t, key.Address, "AMpupnF6QweQXLfCtF4dR45FDdKbTXkLsr")
+}
