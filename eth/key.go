@@ -3,13 +3,17 @@ package eth
 
 import (
 	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"math/big"
 
-	"github.com/ethereum/go-ethereum/crypto/secp256k1"
 	"github.com/pborman/uuid"
 
 	"github.com/inwecrypto/cryptox/keystore"
+	"github.com/inwecrypto/cryptox/secp256k1"
+	"github.com/inwecrypto/cryptox/sha3"
 )
 
 // const variables
@@ -25,6 +29,66 @@ type Key struct {
 	ID         uuid.UUID // Key ID
 	Address    string    // address
 	PrivateKey *ecdsa.PrivateKey
+}
+
+// NewKey create new eth key
+func NewKey() (*Key, error) {
+
+	privateKeyECDSA, err := ecdsa.GenerateKey(secp256k1.S256(), rand.Reader)
+
+	if err != nil {
+		return nil, err
+	}
+
+	id := uuid.NewRandom()
+
+	key := &Key{
+		ID:         id,
+		Address:    pubkeyToAddress(privateKeyECDSA.PublicKey),
+		PrivateKey: privateKeyECDSA,
+	}
+
+	return key, nil
+}
+
+// KeyFromPrivateKey create keystore key from private key
+func KeyFromPrivateKey(privateKey []byte) (*Key, error) {
+	privateKeyECDSA, err := toECDSA(privateKey, false)
+
+	if err != nil {
+		return nil, err
+	}
+
+	id := uuid.NewRandom()
+
+	key := &Key{
+		ID:         id,
+		Address:    pubkeyToAddress(privateKeyECDSA.PublicKey),
+		PrivateKey: privateKeyECDSA,
+	}
+
+	return key, nil
+}
+
+// PubkeyToAddress get eth address from public key
+func pubkeyToAddress(p ecdsa.PublicKey) string {
+	pubBytes := fromECDSAPub(&p)
+	return hex.EncodeToString(keccak256(pubBytes[1:])[12:])
+}
+
+func fromECDSAPub(pub *ecdsa.PublicKey) []byte {
+	if pub == nil || pub.X == nil || pub.Y == nil {
+		return nil
+	}
+	return elliptic.Marshal(secp256k1.S256(), pub.X, pub.Y)
+}
+
+func keccak256(data ...[]byte) []byte {
+	d := sha3.NewKeccak256()
+	for _, b := range data {
+		d.Write(b)
+	}
+	return d.Sum(nil)
 }
 
 func keystoreKeyToEthKey(key *keystore.Key) (*Key, error) {

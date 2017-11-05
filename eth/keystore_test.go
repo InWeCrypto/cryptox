@@ -35,3 +35,29 @@ func TestScryptKeyStore(t *testing.T) {
 	assert.Equal(t, key, key2)
 
 }
+
+func TestPublicKeyToAddress(t *testing.T) {
+	neo, err := ioutil.ReadFile("testdata/scrypt.json")
+
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+
+	key, err := ReadKeyStore(neo, "test")
+
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+
+	assert.Equal(t, pubkeyToAddress(key.PrivateKey.PublicKey), key.Address)
+}
+
+func TestNewKey(t *testing.T) {
+	key, err := NewKey()
+
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+
+	assert.Equal(t, pubkeyToAddress(key.PrivateKey.PublicKey), key.Address)
+}
