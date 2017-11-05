@@ -20,4 +20,22 @@ func TestNEOAddress(t *testing.T) {
 
 	assert.Equal(t, hex.EncodeToString(key.PrivateKey.PublicKey.ToBytes()), "0398b8d209365a197311d1b288424eaea556f6235f5730598dede5647f6a11d99a")
 	assert.Equal(t, key.Address, "AMpupnF6QweQXLfCtF4dR45FDdKbTXkLsr")
+
+	ks, err := WriteLightScryptKeyStore(key, "test")
+
+	assert.NoError(t, err)
+
+	key2, err := ReadKeyStore(ks, "test")
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t,
+		hex.EncodeToString(key2.PrivateKey.ToBytes()),
+		"d59208b9228bff23009a666262a800f20f9dad38b0d9291f445215a0d4542beb")
+
+	assert.Equal(t, hex.EncodeToString(key2.PrivateKey.PublicKey.ToBytes()), "0398b8d209365a197311d1b288424eaea556f6235f5730598dede5647f6a11d99a")
+	assert.Equal(t, key2.Address, "AMpupnF6QweQXLfCtF4dR45FDdKbTXkLsr")
+
 }
