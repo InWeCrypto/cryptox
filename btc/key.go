@@ -2,32 +2,17 @@ package btc
 
 import (
 	"bytes"
+	"crypto/ecdsa"
+	"crypto/elliptic"
 	"crypto/sha256"
 	"fmt"
 	"io"
 	"math/big"
 	"strings"
 
+	"github.com/apisit/rfc6979"
 	"golang.org/x/crypto/ripemd160"
 )
-
-/******************************************************************************/
-/* ECDSA Keypair Generation */
-/******************************************************************************/
-
-// var priv.secp256k1 EllipticCurve
-
-func init() {
-	/* See Certicom's SEC2 2.7.1, pg.15 */
-	/* priv.secp256k1 elliptic curve parameters */
-	// priv.secp256k1.P, _ = new(big.Int).SetString("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F", 16)
-	// priv.secp256k1.A, _ = new(big.Int).SetString("0000000000000000000000000000000000000000000000000000000000000000", 16)
-	// priv.secp256k1.B, _ = new(big.Int).SetString("0000000000000000000000000000000000000000000000000000000000000007", 16)
-	// priv.secp256k1.G.X, _ = new(big.Int).SetString("79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798", 16)
-	// priv.secp256k1.G.Y, _ = new(big.Int).SetString("483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8", 16)
-	// priv.secp256k1.N, _ = new(big.Int).SetString("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", 16)
-	// priv.secp256k1.H, _ = new(big.Int).SetString("01", 16)
-}
 
 // PublicKey represents a Bitcoin public key.
 type PublicKey struct {
@@ -483,4 +468,35 @@ func (pub *PublicKey) ToAddressUncompressed() (address string) {
 	address = b58checkencode(0x00, pub_hash_2)
 
 	return address
+}
+
+func toECDSA(key []byte, curve elliptic.Curve) ecdsa.PrivateKey {
+
+	priv := new(ecdsa.PrivateKey)
+	priv.PublicKey.Curve = curve
+	priv.D = new(big.Int).SetBytes(key)
+	priv.PublicKey.X, priv.PublicKey.Y = priv.PublicKey.Curve.ScalarBaseMult(key)
+	return *priv
+}
+
+// Sign .
+func (priv *PrivateKey) Sign(data []byte, curve elliptic.Curve) ([]byte, error) {
+
+	ecdsaPrivateKey := toECDSA(priv.ToBytes(), curve)
+
+	digest := sha256.Sum256(data)
+
+	r, s, err := rfc6979.SignECDSA(&ecdsaPrivateKey, digest[:], sha256.New)
+	if err != nil {
+		return nil, err
+	}
+
+	params := ecdsaPrivateKey.Curve.Params()
+	curveOrderByteSize := params.P.BitLen() / 8
+	rBytes, sBytes := r.Bytes(), s.Bytes()
+	signature := make([]byte, curveOrderByteSize*2)
+	copy(signature[curveOrderByteSize-len(rBytes):], rBytes)
+	copy(signature[curveOrderByteSize*2-len(sBytes):], sBytes)
+
+	return signature, nil
 }

@@ -3,6 +3,12 @@
 	"ignore": "test",
 	"package": [
 		{
+			"checksumSHA1": "oQgLy8KmIOVov04WXH7KgU1bszc=",
+			"path": "github.com/btcsuite/btcutil/base58",
+			"revision": "5ffa719c3882fd2ec1e8b9f4978066701c31a343",
+			"revisionTime": "2017-06-12T00:02:13Z"
+		},
+		{
 			"checksumSHA1": "OFu4xJEIjiI8Suu+j/gabfp+y6Q=",
 			"origin": "github.com/stretchr/testify/vendor/github.com/davecgh/go-spew/spew",
 			"path": "github.com/davecgh/go-spew/spew",
@@ -14,6 +20,18 @@
 			"path": "github.com/dynamicgo/slf4go",
 			"revision": "a2849962ffcb49649b3ee20d4a5cc72b1374884f",
 			"revisionTime": "2017-09-07T09:23:55Z"
+		},
+		{
+			"checksumSHA1": "/dtdwt1sRwJY3iQYu2hnR+zRzDI=",
+			"path": "github.com/goany/slf4go",
+			"revision": "73ea855627583a86e254d3fbec479b4a69fc5bc5",
+			"revisionTime": "2017-10-12T06:43:31Z"
+		},
+		{
+			"checksumSHA1": "RROIAUNEsm4vOuHEDwi76eK/TJ4=",
+			"path": "github.com/inwecrypto/jsonrpc",
+			"revision": "76c20b913878f1d6110cafcd158fdfea9445b37d",
+			"revisionTime": "2017-11-06T09:04:15Z"
 		},
 		{
 			"checksumSHA1": "Se195FlZ160eaEk/uVx4KdTPSxU=",
@@ -37,6 +55,12 @@
 		{
 			"checksumSHA1": "1MGpGDQqnUoRpv7VEcQrXOBydXE=",
 			"path": "golang.org/x/crypto/pbkdf2",
+			"revision": "81e90905daefcd6fd217b62423c0908922eadb30",
+			"revisionTime": "2017-08-25T20:24:07Z"
+		},
+		{
+			"checksumSHA1": "y/oIaxq2d3WPizRZfVjo8RCRYTU=",
+			"path": "golang.org/x/crypto/ripemd160",
 			"revision": "81e90905daefcd6fd217b62423c0908922eadb30",
 			"revisionTime": "2017-08-25T20:24:07Z"
 		},
