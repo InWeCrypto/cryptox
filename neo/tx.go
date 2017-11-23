@@ -19,6 +19,12 @@ import (
 
 var logger = slf4go.Get("neo")
 
+// Asserts .
+const (
+	GasAssert = "602c79718b16e442de58778e148d0b1084e3b2dffd5de6b7b16cee7969282de7"
+	NEOAssert = "c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b"
+)
+
 // Err
 var (
 	ErrNoUTXO = errors.New("no enough utxo")
@@ -378,7 +384,7 @@ func (script *RawTxScript) WriteBytes(writer io.Writer) error {
 // RawClaimTx .
 type RawClaimTx struct {
 	*RawTx
-	Claims []RawTxInput
+	Claims []*RawTxInput
 }
 
 // NewRawClaimTx .
@@ -388,6 +394,8 @@ func NewRawClaimTx() *RawClaimTx {
 	}
 
 	tx.RawTx.XData = func(writer io.Writer) error {
+
+		logger.DebugF("======%x", len(tx.Claims))
 
 		_, err := writer.Write([]byte{byte(len(tx.Claims))})
 
@@ -501,4 +509,35 @@ func CreateSendAssertTx(assert, from, to string, amount float64, unspent []*neog
 	}
 
 	return tx, nil
+}
+
+type claimSorter []*neogo.UTXO
+
+func (s claimSorter) Len() int      { return len(s) }
+func (s claimSorter) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
+
+func (s claimSorter) Less(i, j int) bool {
+	return s[i].SpentBlock < s[j].SpentBlock
+}
+
+// CreateClaimTx .
+func CreateClaimTx(val float64, address string, unspent []*neogo.UTXO) (*RawTx, error) {
+	tx := NewRawClaimTx()
+
+	sort.Sort(claimSorter(unspent))
+
+	for _, utxo := range unspent {
+		tx.Claims = append(tx.Claims, &RawTxInput{
+			TxID: utxo.TransactionID,
+			Vout: uint16(utxo.Vout.N),
+		})
+	}
+
+	tx.Outputs = append(tx.Outputs, &RawTxOutput{
+		AssertID: GasAssert,
+		Value:    val,
+		Address:  address,
+	})
+
+	return tx.RawTx, nil
 }
